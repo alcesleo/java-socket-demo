@@ -3,11 +3,14 @@
 Simple echo server:
 
 ```
-# Start the server
-$ javac Server.java && java Server
+# Compile everything
+javac *.java
 
-# Start the client in another tab
-$ javac Client.java && java Client
+# Start the server
+$ java Server
+
+# Start the clients in another tab
+$ java Client
 
 # Enter text in the client and see it sent to the server
 ```
