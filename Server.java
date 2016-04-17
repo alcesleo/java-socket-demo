@@ -1,3 +1,4 @@
+import java.util.*;
 import java.net.*;
 import java.io.*;
 
@@ -20,24 +21,21 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
             serverSocket.setSoTimeout(5000);
-
-            // Wait and connect to a client
-            Socket socket = serverSocket.accept();
-            DataInputStream input = new DataInputStream(socket.getInputStream());
-
-            System.out.println("Incoming connection from " + socket.getInetAddress());
-            System.out.println();
-
-            while (socket.isConnected()) {
-                System.out.println("<<< " + input.readUTF());
-            }
-
-            // Shut down
-            System.out.println();
-            System.out.println("Server shutting down...");
-            serverSocket.close();
         } catch (IOException e) {
             System.out.println("Connection was interrupted.");
+            System.exit(1);
+        }
+
+        // Wait and connect to a clients indefinitely
+        while (true) {
+            try {
+                Socket socket = serverSocket.accept();
+                System.out.println("<-- Incoming connection from " + socket.getInetAddress());
+                new Thread(new Connection(socket)).start();
+            } catch (IOException e) {
+                // Ignore failed incoming connection
+                continue;
+            }
         }
     }
 }
