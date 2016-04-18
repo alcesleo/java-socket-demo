@@ -2,9 +2,10 @@ import java.util.*;
 import java.net.*;
 import java.io.*;
 
-public class Server {
+public class Server implements MessageReceiver {
     private int port;
     private ServerSocket serverSocket;
+    private ArrayList<Connection> connections;
 
     public static void main(String[] args) {
         Server server = new Server(5555);
@@ -15,6 +16,7 @@ public class Server {
 
     public Server(int port) {
         this.port = port;
+        this.connections = new ArrayList<Connection>();
     }
 
     public void run() {
@@ -31,11 +33,34 @@ public class Server {
             try {
                 Socket socket = serverSocket.accept();
                 System.out.println("<-- Incoming connection from " + socket.getInetAddress());
-                new Thread(new Connection(socket)).start();
+                Connection client = new Connection(socket, this);
+                connections.add(client);
+                client.listenForMessages();
             } catch (IOException e) {
                 // Ignore failed incoming connection
                 continue;
             }
+        }
+    }
+
+    public void messageReceived(String message) {
+        System.out.println("Broadcasting message: " + message);
+        broadcast(message);
+    }
+
+    private void broadcast(String message) {
+        Iterator<Connection> itr = connections.iterator();
+
+        while (itr.hasNext()) {
+            Connection client = itr.next();
+
+            // Remove the connection and move on if it has disconnected
+            if (client.disconnected()) {
+                itr.remove();
+                continue;
+            }
+
+            client.sendMessage(message);
         }
     }
 }
